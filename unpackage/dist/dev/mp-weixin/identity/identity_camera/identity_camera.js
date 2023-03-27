@@ -135,7 +135,7 @@ __webpack_require__.r(__webpack_exports__);
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function(uni) {
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -172,9 +172,39 @@ var _default = {
   onLoad: function onLoad(options) {
     this.type = options.type;
   },
-  methods: {}
+  methods: {
+    clickBtn: function clickBtn() {
+      var that = this;
+      if (that.btnText == "拍照") {
+        var ctx = uni.createCameraContext();
+        ctx.takePhoto({
+          quality: 'high',
+          success: function success(resp) {
+            that.photoPath = resp.tempImagePath;
+            that.showCamera = false;
+            that.showImage = true;
+            that.btnText = '提交';
+          }
+        });
+      } else {
+        var pages = getCurrentPages();
+        var pervPage = pages[pages.length - 2];
+        pervPage.$vm.updatePhoto(that.type, that.photoPath);
+        uni.navigateBack({
+          delta: 1
+        });
+      }
+    },
+    afresh: function afresh() {
+      var that = this;
+      that.showCamera = true;
+      that.showImage = false;
+      that.btnText = '拍照';
+    }
+  }
 };
 exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
 

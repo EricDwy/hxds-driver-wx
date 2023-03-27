@@ -68,33 +68,24 @@
 				<u-cell-item title="性别" :value="idcard.sex" :value-style="style" :arrow="false" />
 				<u-cell-item title="生日" :value="idcard.birthday" :value-style="style" :arrow="false" />
 				<u-cell-item title="身份证号" :value="idcard.pid" :value-style="style" :arrow="false" />
-				<u-cell-item title="身份证地址" :value="idcard.shortAddress" :value-style="style" @click="showAddressContent" />
+				<u-cell-item title="身份证地址" :value="idcard.shortAddress" :value-style="style"
+					@click="showAddressContent" />
 				<u-cell-item title="身份证有效期" :value="idcard.expiration" :value-style="style" :arrow="false" />
 			</u-cell-group>
 		</view>
 		<view class="title">联系方式</view>
 		<view class="list">
 			<u-cell-group border="false">
-				<u-cell-item title="手机号码" :value="contact.tel" :value-style="style" @click="enterContent('手机号码', 'tel')" />
-				<u-cell-item title="电子信箱" :value="contact.shortEmail" :value-style="style" @click="enterContent('电子信箱', 'email')" />
-				<u-cell-item
-					title="收信地址"
-					:value="contact.shortMailAddress"
-					:value-style="style"
-					@click="enterContent('收信地址', 'mailAddress')"
-				/>
-				<u-cell-item
-					title="紧急联系人"
-					:value="contact.contactName"
-					:value-style="style"
-					@click="enterContent('紧急联系人', 'contactName')"
-				/>
-				<u-cell-item
-					title="紧急联系人电话"
-					:value="contact.contactTel"
-					:value-style="style"
-					@click="enterContent('紧急联系人电话', 'contactTel')"
-				/>
+				<u-cell-item title="手机号码" :value="contact.tel" :value-style="style"
+					@click="enterContent('手机号码', 'tel')" />
+				<u-cell-item title="电子信箱" :value="contact.shortEmail" :value-style="style"
+					@click="enterContent('电子信箱', 'email')" />
+				<u-cell-item title="收信地址" :value="contact.shortMailAddress" :value-style="style"
+					@click="enterContent('收信地址', 'mailAddress')" />
+				<u-cell-item title="紧急联系人" :value="contact.contactName" :value-style="style"
+					@click="enterContent('紧急联系人', 'contactName')" />
+				<u-cell-item title="紧急联系人电话" :value="contact.contactTel" :value-style="style"
+					@click="enterContent('紧急联系人电话', 'contactTel')" />
 			</u-cell-group>
 		</view>
 		<view class="title">驾驶证</view>
@@ -113,98 +104,139 @@
 </template>
 
 <script>
-let dayjs = require('dayjs');
-export default {
-	data() {
-		return {
-			mode: 'fill',
-			style: {
-				color: '#FF9900'
-			},
-			cardBackground: [
-				'../static/filling/credentials-bg.jpg',
-				'../static/filling/credentials-bg.jpg',
-				'../static/filling/credentials-bg.jpg',
-				'../static/filling/credentials-bg.jpg',
-				'../static/filling/credentials-bg.jpg',
-				'../static/filling/credentials-bg.jpg'
-			],
-			idcard: {
-				pid: '',
-				name: '',
-				sex: '',
-				address: '',
-				shortAddress: '',
-				birthday: '',
-				expiration: '',
-				idcardFront: '',
-				idcardBack: '',
-				idcardHolding: ''
-			},
-			contact: {
-				tel: '',
-				email: '',
-				shortEmail: '',
-				mailAddress: '',
-				shortMailAddress: '',
-				contactName: '',
-				contactTel: ''
-			},
-			drcard: {
-				issueDate: '',
-				carClass: '',
-				validFrom: '',
-				validTo: '',
-				drcardFront: '',
-				drcardBack: '',
-				drcardHolding: ''
-			},
-			cosImg: [],
-			currentImg: {},
-			realAuth: uni.getStorageSync('realAuth')
-		};
-	},
-	methods: {
-		scanIdcardFront:function(resp){
-			let that=this
-			let detail=resp.detail
-			that.idcard.pid=detail.id.text;
-			that.idcard.name=detail.name.text;
-			that.idcard.sex=detail.gender.text;
-			that.idcard.address=detail.address.text;
-			that.idcard.shortAddress=detail.address.text.substr(0,15)+'...';
-			that.idcard.birthday=detail.birth.text;
-			that.idcard.idcardFront=detail.image_path;
-			that.cardBackground[0]=detail.image_path;
-			that.uploadCos(that.url.uploadCosPrivateFile,detail.image_path,"",function(resp){
-				let data = JSON.parse(resp.data)
-				let path = data.url
-				that.currentImg['idcardFront']=path
-				that.cosImg.push(path)
-			})
+	let dayjs = require('dayjs');
+	export default {
+		data() {
+			return {
+				mode: 'fill',
+				style: {
+					color: '#FF9900'
+				},
+				cardBackground: [
+					'../static/filling/credentials-bg.jpg',
+					'../static/filling/credentials-bg.jpg',
+					'../static/filling/credentials-bg.jpg',
+					'../static/filling/credentials-bg.jpg',
+					'../static/filling/credentials-bg.jpg',
+					'../static/filling/credentials-bg.jpg'
+				],
+				idcard: {
+					pid: '',
+					name: '',
+					sex: '',
+					address: '',
+					shortAddress: '',
+					birthday: '',
+					expiration: '',
+					idcardFront: '',
+					idcardBack: '',
+					idcardHolding: ''
+				},
+				contact: {
+					tel: '',
+					email: '',
+					shortEmail: '',
+					mailAddress: '',
+					shortMailAddress: '',
+					contactName: '',
+					contactTel: ''
+				},
+				drcard: {
+					issueDate: '',
+					carClass: '',
+					validFrom: '',
+					validTo: '',
+					drcardFront: '',
+					drcardBack: '',
+					drcardHolding: ''
+				},
+				cosImg: [],
+				currentImg: {},
+				realAuth: uni.getStorageSync('realAuth')
+			};
 		},
-		scanIdcardBack:function(resp){
-			let that=this
-			let detail=resp.detail
-			that.idcard.idcardBack = detail.image_path;
-			that.cardBackground[1] = detail.image_path;
-			let validDate = detail.valid_date.text.split("-")[1]
-			that.idcard.expiration = dayjs(validDate,"YYYYMMDD").format("YYYY-MM-DD")
-			that.upload(that.url.uploadCosPrivateFile,detail.image_path,"",function(resp){
-				let data = JSON.parse(resp.data)
-				let path = data.url
-				that.currentImg['idcardBack']=path
-				that.cosImg.push(path)
-			})
+		methods: {
+			scanIdcardFront: function(resp) {
+				let that = this
+				let detail = resp.detail
+				that.idcard.pid = detail.id.text;
+				that.idcard.name = detail.name.text;
+				that.idcard.sex = detail.gender.text;
+				that.idcard.address = detail.address.text;
+				that.idcard.shortAddress = detail.address.text.substr(0, 15) + '...';
+				that.idcard.birthday = detail.birth.text;
+				that.idcard.idcardFront = detail.image_path;
+				that.cardBackground[0] = detail.image_path;
+				that.uploadCos(that.url.uploadCosPrivateFile, detail.image_path, "", function(resp) {
+					let data = JSON.parse(resp.data)
+					let path = data.url
+					that.currentImg['idcardFront'] = path
+					that.cosImg.push(path)
+				})
+			},
+			scanIdcardBack: function(resp) {
+				let that = this
+				let detail = resp.detail
+				that.idcard.idcardBack = detail.image_path;
+				that.cardBackground[1] = detail.image_path;
+				let validDate = detail.valid_date.text.split("-")[1]
+				that.idcard.expiration = dayjs(validDate, "YYYYMMDD").format("YYYY-MM-DD")
+				that.uploadCos(that.url.uploadCosPrivateFile, detail.image_path, "", function(resp) {
+					let data = JSON.parse(resp.data)
+					let path = data.url
+					that.currentImg['idcardBack'] = path
+					that.cosImg.push(path)
+				})
+			},
+			updatePhoto: function(type, path) {
+				let that = this
+				that.uploadCos(that.url.uploadCosPrivateFile, path, "", function(resp) {
+					let data = JSON.parse(resp.data)
+					that.cosImg.push(data.url);
+					if (type == 'idcardHolding') {
+						that.cardBackground[2] = path;
+						that.currentImg['idcardHolding'] = data.url;
+						that.idcard.idcardHolding = data.url;
+					}else if(type == "drcardBack"){
+						that.cardBackground[4]=path;
+						that.currentImg['drcardBack'] = data.url;
+						that.idcard.drcardBack =data.url;
+					}else if(type == "drcardHolding"){
+						that.cardBackground[5]=path;
+						that.currentImg['drcardHolding'] = data.url;
+						that.idcard.drcardHolding =data.url;
+					}
+				})
+				that.$forceUpdate()
+			},
+			takePhoto: function(type) {
+				uni.navigateTo({
+					url: "../identity_camera/identity_camera?type=" + type
+				})
+			},
+			scanDrcardFront: function(resp){
+				let that = this;
+				let detail = resp.detail
+				that.drcard.issueDate = detail.issue_date.text;
+				that.drcard.carClass = detail.car_class.text;
+				that.drcard.validFrom = detail.valid_from.text;
+				that.drcard.validTo = detail.valid_to.text;
+				that.drcard.drcardFront = detail.image_path;
+				that.cardBackground[3] = detail.image_path;
+				that.uploadCos(that.url.uploadCosPrivateFile,detail.image_path,"",function(resp){
+					let data = JSON.parse(resp.data)
+					that.cosImg.push(data.url);
+					that.currentImg['drcardFront'] = path;
+				});
+			}
+		},
+		onLoad: function(options) {
+			let that = this;
+			that.mode = options.mode;
 		}
-	},
-	onLoad: function(options) {
-		let that = this;
-        that.mode = options.mode;
-	}
-};
+	};
 </script>
 
 <style lang="less">
-@import url('filling.less');
+	@import url('filling.less');
 </style>

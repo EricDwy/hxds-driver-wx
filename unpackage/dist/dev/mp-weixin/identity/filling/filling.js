@@ -278,15 +278,6 @@ exports.default = void 0;
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 var dayjs = __webpack_require__(/*! dayjs */ 84);
 var _default = {
@@ -358,11 +349,52 @@ var _default = {
       that.cardBackground[1] = detail.image_path;
       var validDate = detail.valid_date.text.split("-")[1];
       that.idcard.expiration = dayjs(validDate, "YYYYMMDD").format("YYYY-MM-DD");
-      that.upload(that.url.uploadCosPrivateFile, detail.image_path, "", function (resp) {
+      that.uploadCos(that.url.uploadCosPrivateFile, detail.image_path, "", function (resp) {
         var data = JSON.parse(resp.data);
         var path = data.url;
         that.currentImg['idcardBack'] = path;
         that.cosImg.push(path);
+      });
+    },
+    updatePhoto: function updatePhoto(type, path) {
+      var that = this;
+      that.uploadCos(that.url.uploadCosPrivateFile, path, "", function (resp) {
+        var data = JSON.parse(resp.data);
+        that.cosImg.push(data.url);
+        if (type == 'idcardHolding') {
+          that.cardBackground[2] = path;
+          that.currentImg['idcardHolding'] = data.url;
+          that.idcard.idcardHolding = data.url;
+        } else if (type == "drcardBack") {
+          that.cardBackground[4] = path;
+          that.currentImg['drcardBack'] = data.url;
+          that.idcard.drcardBack = data.url;
+        } else if (type == "drcardHolding") {
+          that.cardBackground[5] = path;
+          that.currentImg['drcardHolding'] = data.url;
+          that.idcard.drcardHolding = data.url;
+        }
+      });
+      that.$forceUpdate();
+    },
+    takePhoto: function takePhoto(type) {
+      uni.navigateTo({
+        url: "../identity_camera/identity_camera?type=" + type
+      });
+    },
+    scanDrcardFront: function scanDrcardFront(resp) {
+      var that = this;
+      var detail = resp.detail;
+      that.drcard.issueDate = detail.issue_date.text;
+      that.drcard.carClass = detail.car_class.text;
+      that.drcard.validFrom = detail.valid_from.text;
+      that.drcard.validTo = detail.valid_to.text;
+      that.drcard.drcardFront = detail.image_path;
+      that.cardBackground[3] = detail.image_path;
+      that.uploadCos(that.url.uploadCosPrivateFile, detail.image_path, "", function (resp) {
+        var data = JSON.parse(resp.data);
+        that.cosImg.push(data.url);
+        that.currentImg['drcardFront'] = path;
       });
     }
   },
