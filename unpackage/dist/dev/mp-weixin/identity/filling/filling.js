@@ -173,6 +173,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 //
 //
 //
@@ -382,6 +385,24 @@ var _default = {
         url: "../identity_camera/identity_camera?type=" + type
       });
     },
+    enterContent: function enterContent(title, key) {
+      var that = this;
+      uni.showModal({
+        title: title,
+        editable: true,
+        content: that.contact[key],
+        success: function success(resp) {
+          if (resp.confirm) {
+            if (key == "mailAddress") {
+              that.contact['shortMailAddress'] = resp.content.substr(0, 15) + (resp.content.length > 15 ? "..." : "");
+            } else if (key == "email") {
+              that.contact['shortEmail'] = resp.content.substr(0, 25) + (resp.content.length > 25 ? "..." : "");
+            }
+            that.contact[key] = resp.content;
+          }
+        }
+      });
+    },
     scanDrcardFront: function scanDrcardFront(resp) {
       var that = this;
       var detail = resp.detail;
@@ -394,8 +415,100 @@ var _default = {
       that.uploadCos(that.url.uploadCosPrivateFile, detail.image_path, "", function (resp) {
         var data = JSON.parse(resp.data);
         that.cosImg.push(data.url);
-        that.currentImg['drcardFront'] = path;
+        that.currentImg['drcardFront'] = data.url;
       });
+    },
+    save: function save(resp) {
+      var that = this;
+      if (Object.keys(that.currentImg).length != 6) {
+        that.$refs.uToast.show({
+          title: '证件不完整',
+          type: 'error'
+        });
+      } else if (that.checkValidTel(that.contact.tel, '手机号码') && that.checkValidEmail(that.contact.email, '电子邮箱') && that.checkValidAddress(that.contact.mailAddress, '收信地址') && that.checkValidName(that.contact.contactName, '联系人') && that.checkValidTel(that.contact.contactTel, '联系人电话')) {
+        uni.showModal({
+          title: '提示信息',
+          content: '确认提交实名信息资料？',
+          success: function success(resp) {
+            if (resp.confirm) {
+              var temp = [];
+              var values = [];
+              for (var key in that.currentImg) {
+                values.push(key);
+              }
+              var _iterator = _createForOfIteratorHelper(that.cosImg),
+                _step;
+              try {
+                for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                  var one = _step.value;
+                  if (!values.includes(one)) {
+                    temp.push(one);
+                  }
+                }
+              } catch (err) {
+                _iterator.e(err);
+              } finally {
+                _iterator.f();
+              }
+              if (temp.length > 0) {
+                that.ajax(that.url.deleteCosPrivateFiel, "POST", JSON.stringify({
+                  pathes: temp
+                }), function () {
+                  console.log('文件删除成功');
+                });
+              }
+              var data = {
+                pid: that.idcard.pid,
+                name: that.idcard.name,
+                sex: that.idcard.sex,
+                birthday: that.idcard.birthday,
+                tel: that.contact.tel,
+                eamil: that.contact.email,
+                mailAddress: that.contact.mailAddress,
+                contactName: that.contact.contactName,
+                contactTel: that.contact.contactTel,
+                idcardAddress: that.idcard.address,
+                idcardFront: that.currentImg.idcardFront,
+                idcardBack: that.currentImg.idcardBack,
+                idcardHolding: that.currentImg.idcardHolding,
+                idcardExpiration: that.idcard.expiration,
+                drcardType: that.drcard.carclass,
+                drcardExpiration: that.drcard.validTo,
+                drcardIssueDate: that.drcard.issueDate,
+                drcardFront: that.currentImg.drcardFront,
+                drcardBack: that.currentImg.drcardBack,
+                drcardHolding: that.currentImg.drcardHolding
+              };
+              that.ajax(that.url.updateDriverAuth, "POST", data, function (resp) {
+                that.$refs.uToast.show({
+                  title: '资料提交成功',
+                  type: 'success',
+                  callback: function callback() {
+                    uni.setStorageSync('realAuth', 3);
+                    that.realAuth = 3; //update 视图 层
+                    if (that.mode == 'create') {
+                      //提示更新采集面部数据
+                    } else {
+                      uni.switchTab({
+                        url: '../../pages/workbench/workbench'
+                      });
+                    }
+                  }
+                });
+              });
+            }
+          }
+        });
+      }
+    },
+    showAddressContent: function showAddressContent() {
+      if (this.idcard.address.length > 0) {
+        uni.showModal({
+          title: '身份证地址',
+          content: this.idcard.address,
+          showCancel: false
+        });
+      }
     }
   },
   onLoad: function onLoad(options) {

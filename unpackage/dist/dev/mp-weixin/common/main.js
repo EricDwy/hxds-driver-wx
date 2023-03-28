@@ -31,6 +31,7 @@ createApp(app).$mount();
 var baseUrl = "http://192.168.31.61:8201/hxds-driver";
 _vue.default.prototype.url = {
   registerNewDriver: "".concat(baseUrl, "/driver/registerNewDriver"),
+  updateDriverAuth: "".concat(baseUrl, "/driver/updateDriverAuth"),
   uploadCosPrivateFile: "".concat(baseUrl, "/cos/uploadCosPrivateFile"),
   deleteCosPrivateFiel: "".concat(baseUrl, "/cos/deleteCosPrivateFile")
 };

@@ -58,6 +58,7 @@ export default {
 			that.showCamera =true;
 			that.showImage=false;
 			that.btnText='拍照';
+
 		}
 	}
 };

@@ -197,14 +197,14 @@
 						that.cardBackground[2] = path;
 						that.currentImg['idcardHolding'] = data.url;
 						that.idcard.idcardHolding = data.url;
-					}else if(type == "drcardBack"){
-						that.cardBackground[4]=path;
+					} else if (type == "drcardBack") {
+						that.cardBackground[4] = path;
 						that.currentImg['drcardBack'] = data.url;
-						that.idcard.drcardBack =data.url;
-					}else if(type == "drcardHolding"){
-						that.cardBackground[5]=path;
+						that.idcard.drcardBack = data.url;
+					} else if (type == "drcardHolding") {
+						that.cardBackground[5] = path;
 						that.currentImg['drcardHolding'] = data.url;
-						that.idcard.drcardHolding =data.url;
+						that.idcard.drcardHolding = data.url;
 					}
 				})
 				that.$forceUpdate()
@@ -214,7 +214,27 @@
 					url: "../identity_camera/identity_camera?type=" + type
 				})
 			},
-			scanDrcardFront: function(resp){
+			enterContent: function(title, key) {
+				let that = this
+				uni.showModal({
+					title: title,
+					editable: true,
+					content: that.contact[key],
+					success: function(resp) {
+						if (resp.confirm) {
+							if (key == "mailAddress") {
+								that.contact['shortMailAddress'] = resp.content.substr(0, 15) + (resp
+									.content.length > 15 ? "..." : "")
+							} else if (key == "email") {
+								that.contact['shortEmail'] = resp.content.substr(0, 25) + (resp.content
+									.length > 25 ? "..." : "")
+							}
+							that.contact[key] = resp.content
+						}
+					}
+				})
+			},
+			scanDrcardFront: function(resp) {
 				let that = this;
 				let detail = resp.detail
 				that.drcard.issueDate = detail.issue_date.text;
@@ -223,13 +243,102 @@
 				that.drcard.validTo = detail.valid_to.text;
 				that.drcard.drcardFront = detail.image_path;
 				that.cardBackground[3] = detail.image_path;
-				that.uploadCos(that.url.uploadCosPrivateFile,detail.image_path,"",function(resp){
-					let data = JSON.parse(resp.data)
+				that.uploadCos(that.url.uploadCosPrivateFile, detail.image_path, "", function(resp) {
+					let data = JSON.parse(resp.data);
 					that.cosImg.push(data.url);
-					that.currentImg['drcardFront'] = path;
+					that.currentImg['drcardFront'] = data.url;
 				});
+			},
+			save: function(resp) {
+				let that = this
+				if (Object.keys(that.currentImg).length != 6) {
+					that.$refs.uToast.show({
+						title: '证件不完整',
+						type: 'error'
+					});
+				} else if (
+					that.checkValidTel(that.contact.tel,'手机号码') &&
+					that.checkValidEmail(that.contact.email,'电子邮箱') &&
+					that.checkValidAddress(that.contact.mailAddress,'收信地址') &&
+					that.checkValidName(that.contact.contactName,'联系人') &&
+					that.checkValidTel(that.contact.contactTel,'联系人电话')
+				){
+				    uni.showModal({
+						title:'提示信息',
+						content:'确认提交实名信息资料？',
+						success:function(resp){
+							if(resp.confirm){
+								let temp = []
+								let values = []
+								for(let key in that.currentImg){
+									values.push(key)
+								}
+								for(let one of that.cosImg){
+									if(!values.includes(one)){
+										temp.push(one)
+									}
+								}
+								if(temp.length>0){
+									that.ajax(that.url.deleteCosPrivateFiel,"POST",JSON.stringify({pathes:temp}),function(){
+										console.log('文件删除成功');
+									})
+								}
+								let data = {
+									pid: that.idcard.pid,
+									name: that.idcard.name,
+									sex: that.idcard.sex,
+									birthday: that.idcard.birthday,
+									tel: that.contact.tel,
+									eamil: that.contact.email,
+									mailAddress: that.contact.mailAddress,
+									contactName: that.contact.contactName,
+									contactTel: that.contact.contactTel,
+									idcardAddress: that.idcard.address,
+									idcardFront: that.currentImg.idcardFront,
+									idcardBack: that.currentImg.idcardBack,
+									idcardHolding: that.currentImg.idcardHolding,
+									idcardExpiration: that.idcard.expiration,
+									drcardType: that.drcard.carclass,
+									drcardExpiration: that.drcard.validTo,
+									drcardIssueDate: that.drcard.issueDate,
+									drcardFront: that.currentImg.drcardFront,
+									drcardBack: that.currentImg.drcardBack,
+									drcardHolding: that.currentImg.drcardHolding
+								}
+								that.ajax(that.url.updateDriverAuth,"POST",data,function(resp){
+									that.$refs.uToast.show({
+										title:'资料提交成功',
+										type:'success',
+										callback:function(){
+											uni.setStorageSync('realAuth',3);
+											that.realAuth = 3;//update 视图 层
+											if(that.mode == 'create'){
+												//提示更新采集面部数据
+											}
+											else{
+												uni.switchTab({
+													url:'../../pages/workbench/workbench'
+												})
+											}
+										}
+									})
+								})
+							}
+						}
+					})
+				}
+			},
+			showAddressContent: function(){
+				if(this.idcard.address.length>0){
+					uni.showModal({
+						title:'身份证地址',
+						content:this.idcard.address,
+						showCancel:false
+					});
+				}
 			}
 		},
+		
 		onLoad: function(options) {
 			let that = this;
 			that.mode = options.mode;

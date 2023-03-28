@@ -34,6 +34,7 @@ let baseUrl = "http://192.168.31.61:8201/hxds-driver"
 
 Vue.prototype.url = {
     registerNewDriver:`${baseUrl}/driver/registerNewDriver`,
+    updateDriverAuth:`${baseUrl}/driver/updateDriverAuth`,
     uploadCosPrivateFile:`${baseUrl}/cos/uploadCosPrivateFile`,
     deleteCosPrivateFiel:`${baseUrl}/cos/deleteCosPrivateFile`,
 	
