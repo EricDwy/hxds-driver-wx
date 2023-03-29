@@ -289,7 +289,7 @@
 									sex: that.idcard.sex,
 									birthday: that.idcard.birthday,
 									tel: that.contact.tel,
-									eamil: that.contact.email,
+									email: that.contact.email,
 									mailAddress: that.contact.mailAddress,
 									contactName: that.contact.contactName,
 									contactTel: that.contact.contactTel,
@@ -298,7 +298,7 @@
 									idcardBack: that.currentImg.idcardBack,
 									idcardHolding: that.currentImg.idcardHolding,
 									idcardExpiration: that.idcard.expiration,
-									drcardType: that.drcard.carclass,
+									drcardType: that.drcard.carClass,
 									drcardExpiration: that.drcard.validTo,
 									drcardIssueDate: that.drcard.issueDate,
 									drcardFront: that.currentImg.drcardFront,
@@ -314,6 +314,9 @@
 											that.realAuth = 3;//update 视图 层
 											if(that.mode == 'create'){
 												//提示更新采集面部数据
+												uni.navigateTo({
+													url:"../face_camera/face_camera?mode=create"
+												})
 											}
 											else{
 												uni.switchTab({

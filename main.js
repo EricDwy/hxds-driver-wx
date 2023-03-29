@@ -37,12 +37,14 @@ Vue.prototype.url = {
     updateDriverAuth:`${baseUrl}/driver/updateDriverAuth`,
     uploadCosPrivateFile:`${baseUrl}/cos/uploadCosPrivateFile`,
     deleteCosPrivateFiel:`${baseUrl}/cos/deleteCosPrivateFile`,
+    createDriverFaceModel:`${baseUrl}/driver/createDriverFaceModel`,
+    verificateDriverFace:`${baseUrl}/driver/verificateDriverFace`,
 	
 }
 
 Vue.prototype.tencent = {
 	map: {
-		referer: "华夏代驾",
+		referer: "九十代驾",
 		key: "腾讯位置服务的密钥"
 	}
 }

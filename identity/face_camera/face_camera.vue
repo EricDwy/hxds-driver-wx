@@ -38,13 +38,73 @@ export default {
 		};
 	},
 	methods: {
-		
+		confirmHandle:function(){
+			let that=this
+			that.audio.stop()
+			let ctx=uni.createCameraContext()
+			ctx.takePhoto({
+				quality:'high',
+				success:function(resp){
+					that.photoPath=resp.tempImagePath
+					that.showCamera=false
+					that.showImage=true
+					uni.getFileSystemManager().readFile({
+						filePath:that.photoPath,
+						encoding:"base64",						
+						success:function(resp){
+							let base64='data:image:/png;base64,'+resp.data;
+							let url=null;
+							if(that.mode=="create"){
+								url=that.url.createDriverFaceModel;
+							}else{
+								url=that.url.verificateDriverFace;
+							}
+								that.ajax(url,"POST",{photo:base64},function(resp){
+									let result = resp.data.result
+									if(that.mode=="create"){
+										if(result!=null&&result.length>0){
+											console.error(result);
+											uni.showToast({
+												icon:'none',
+												title:'面部录入失败，请重新录入'
+											});
+											setTimeout(function(){
+												that.showCamera=true;
+												that.showImage=false;
+											},2000);
+										}else{
+										   uni.showToast({
+											title:'面部录入成功'
+										   });
+										    setTimeout(function(){
+											   uni.switchTab({
+												url:'../../pages/workbench/workbench'
+											  })
+										   },2000);
+									    }
+									}
+									 else{
+																							
+									}   					
+								})
+						}						
+					})
+			}
+		    })
+	  }
 	},
 	onLoad: function(options) {
-		
+		let that =this
+		that.mode=options.mode
+		let audio=uni.createInnerAudioContext();
+		that.audio=audio
+		audio.src="/static/voice/voice_5.mp3"
+		audio.play()
 	},
 	onHide:function(){
-		
+		if(this.audio!=null){
+			this.audio.stop()
+		}
 	}
 };
 </script>

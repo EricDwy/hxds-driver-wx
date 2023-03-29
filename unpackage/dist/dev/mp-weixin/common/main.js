@@ -33,11 +33,13 @@ _vue.default.prototype.url = {
   registerNewDriver: "".concat(baseUrl, "/driver/registerNewDriver"),
   updateDriverAuth: "".concat(baseUrl, "/driver/updateDriverAuth"),
   uploadCosPrivateFile: "".concat(baseUrl, "/cos/uploadCosPrivateFile"),
-  deleteCosPrivateFiel: "".concat(baseUrl, "/cos/deleteCosPrivateFile")
+  deleteCosPrivateFiel: "".concat(baseUrl, "/cos/deleteCosPrivateFile"),
+  createDriverFaceModel: "".concat(baseUrl, "/driver/createDriverFaceModel"),
+  verificateDriverFace: "".concat(baseUrl, "/driver/verificateDriverFace")
 };
 _vue.default.prototype.tencent = {
   map: {
-    referer: "华夏代驾",
+    referer: "九十代驾",
     key: "腾讯位置服务的密钥"
   }
 };
