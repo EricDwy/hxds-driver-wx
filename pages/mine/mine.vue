@@ -129,10 +129,112 @@ export default {
 		};
 	},
 	methods: {
-		
+		logoutHandle:function(){
+			let that = this;
+			uni.vibrateShort({});
+			uni.showModal({
+				title:'提示信息',
+				content:'确认退出系统？',
+				success:function(resp){
+					if(resp.confirm){
+						that.ajax(that.url.logout,'GET',null,function(resp){
+							uni.removeStorageSync('realAuth');
+							uni.removeStorageSync('token');
+							uni.showToast({
+								title:'已经退出系统',
+								success:function(){
+									setTimeout(function(){
+										uni.redirectTo({
+											url:'../login/login'
+										});
+									},1500);
+								}
+							})
+						})
+					}
+				}
+			})
+		},
+		serviceHandle:function(resp){
+			uni.vibrateShort({})
+			uni.makePhoneCall({
+				phoneNumber:"17612520985"
+			})
+		},
+		clearHandle:function(resp){
+			uni.vibrateShort({})
+			uni.showModal({
+				title:'提示消息',
+				content:'清理本地缓存',
+				success:function(resp){
+					if(resp.confirm){
+						uni.vibrateShort({})
+						uni.showLoading({
+							title:"执行中"
+						})
+						let cache = uni.getStorageInfoSync()
+						console.log("加载缓存成功"+cache)
+						for(let key of cache.keys){
+							if(key=="token"||key=="realAuth"){
+								continue
+							}
+							uni.removeStorageSync(key)
+							console.log("删除缓存成功"+key)
+						}
+						uni.getSavedFileList({
+							success:function(resp){
+								for(let one of resp.fileList){
+									let path = one.filePath
+									uni.removeSavedFile({
+										filePath:path,
+										success:function(){
+											console.log("del cache success")
+											
+										}
+									})
+								}
+							}
+						})
+						setTimeout(function(){
+							uni.hideLoading()
+							uni.showToast({
+								title:"清理完毕"
+							})
+						},500)
+					}
+				}
+			})
+		}
 	},
 	onShow: function() {
-		
+		let that = this;
+		that.ajax(that.url.searchDriverBaseInfo,'POST',null,function(resp){
+			let result = resp.data.result
+			that.name=result.name
+			that.photo=result.photo
+			that.realAuth=(uni.getStorageSync('realAuth') == 2)
+			let createTime=dayjs(result.createTime,"YYYY-MM-DD")
+			let current=dayjs()
+			let years=current.diff(createTime,'year')
+			that.years=years
+			that.level=result.summary.level
+			if(that.level<10){
+				that.levelName='初级代驾';
+			}else if(that.level<30){
+				that.levelName='中级代驾';
+			}else if(that.level<50){
+				that.levelName='高级代驾';
+			}else{
+				that.levelName='王牌代驾';
+			}
+			that.balance=result.balance;
+			that.totalOrder=result.summary.totalOrder;
+			that.weekOrder=result.summary.weekOrder;
+			that.weekComment=result.summary.weekComment;
+			that.appeal=result.summary.appeal;
+			
+			
+		})
 	},
 	onHide: function() {
 		

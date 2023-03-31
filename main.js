@@ -39,13 +39,36 @@ Vue.prototype.url = {
     deleteCosPrivateFiel:`${baseUrl}/cos/deleteCosPrivateFile`,
     createDriverFaceModel:`${baseUrl}/driver/createDriverFaceModel`,
     verificateDriverFace:`${baseUrl}/driver/verificateDriverFace`,
+    login:`${baseUrl}/driver/login`,
+    searchDriverBaseInfo:`${baseUrl}/driver/searchDriverBaseInfo`,
+    logout:`${baseUrl}/driver/logout`,
+	searchWorkbenchData: `${baseUrl}/driver/searchWorkbenchData`,
+	searchDriverAuth: `${baseUrl}/driver/searchDriverAuth`,
+	startWork: `${baseUrl}/driver/startWork`,
+	stopWork: `${baseUrl}/driver/stopWork`,
+	receiveNewOrderMessage: `${baseUrl}/message/order/new/receiveNewOrderMessage`,
+	acceptNewOrder: `${baseUrl}/order/acceptNewOrder`,
+	searchDriverExecuteOrder: `${baseUrl}/order/searchDriverExecuteOrder`,
+	searchDriverCurrentOrder: `${baseUrl}/order/searchDriverCurrentOrder`,
+	searchOrderForMoveById: `${baseUrl}/order/searchOrderForMoveById`,
+	arriveStartPlace: `${baseUrl}/order/arriveStartPlace`,
+	startDriving: `${baseUrl}/order/startDriving`,
+	uploadRecordFile: `${baseUrl}/monitoring/uploadRecordFile`,
+	updateOrderStatus: `${baseUrl}/order/updateOrderStatus`,
+	updateBillFee: `${baseUrl}/order/updateBillFee`,
+	searchReviewDriverOrderBill: `${baseUrl}/order/searchReviewDriverOrderBill`,
+	searchOrderStatus: `${baseUrl}/order/searchOrderStatus`,
+	updateOrderAboutPayment: `${baseUrl}/order/updateOrderAboutPayment`,
+	searchDriverOrderByPage: `${baseUrl}/order/searchDriverOrderByPage`,
+	searchOrderById: `${baseUrl}/order/searchOrderById`,
+	startCommentWorkflow: `${baseUrl}/comment/startCommentWorkflow`,
 	
 }
 
 Vue.prototype.tencent = {
 	map: {
 		referer: "九十代驾",
-		key: "腾讯位置服务的密钥"
+		key: "FX5BZ-JP6HH-LUODQ-WYD5A-C62O7-QVFFG"
 	}
 }
 

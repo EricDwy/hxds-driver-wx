@@ -35,12 +35,35 @@ _vue.default.prototype.url = {
   uploadCosPrivateFile: "".concat(baseUrl, "/cos/uploadCosPrivateFile"),
   deleteCosPrivateFiel: "".concat(baseUrl, "/cos/deleteCosPrivateFile"),
   createDriverFaceModel: "".concat(baseUrl, "/driver/createDriverFaceModel"),
-  verificateDriverFace: "".concat(baseUrl, "/driver/verificateDriverFace")
+  verificateDriverFace: "".concat(baseUrl, "/driver/verificateDriverFace"),
+  login: "".concat(baseUrl, "/driver/login"),
+  searchDriverBaseInfo: "".concat(baseUrl, "/driver/searchDriverBaseInfo"),
+  logout: "".concat(baseUrl, "/driver/logout"),
+  searchWorkbenchData: "".concat(baseUrl, "/driver/searchWorkbenchData"),
+  searchDriverAuth: "".concat(baseUrl, "/driver/searchDriverAuth"),
+  startWork: "".concat(baseUrl, "/driver/startWork"),
+  stopWork: "".concat(baseUrl, "/driver/stopWork"),
+  receiveNewOrderMessage: "".concat(baseUrl, "/message/order/new/receiveNewOrderMessage"),
+  acceptNewOrder: "".concat(baseUrl, "/order/acceptNewOrder"),
+  searchDriverExecuteOrder: "".concat(baseUrl, "/order/searchDriverExecuteOrder"),
+  searchDriverCurrentOrder: "".concat(baseUrl, "/order/searchDriverCurrentOrder"),
+  searchOrderForMoveById: "".concat(baseUrl, "/order/searchOrderForMoveById"),
+  arriveStartPlace: "".concat(baseUrl, "/order/arriveStartPlace"),
+  startDriving: "".concat(baseUrl, "/order/startDriving"),
+  uploadRecordFile: "".concat(baseUrl, "/monitoring/uploadRecordFile"),
+  updateOrderStatus: "".concat(baseUrl, "/order/updateOrderStatus"),
+  updateBillFee: "".concat(baseUrl, "/order/updateBillFee"),
+  searchReviewDriverOrderBill: "".concat(baseUrl, "/order/searchReviewDriverOrderBill"),
+  searchOrderStatus: "".concat(baseUrl, "/order/searchOrderStatus"),
+  updateOrderAboutPayment: "".concat(baseUrl, "/order/updateOrderAboutPayment"),
+  searchDriverOrderByPage: "".concat(baseUrl, "/order/searchDriverOrderByPage"),
+  searchOrderById: "".concat(baseUrl, "/order/searchOrderById"),
+  startCommentWorkflow: "".concat(baseUrl, "/comment/startCommentWorkflow")
 };
 _vue.default.prototype.tencent = {
   map: {
     referer: "九十代驾",
-    key: "腾讯位置服务的密钥"
+    key: "FX5BZ-JP6HH-LUODQ-WYD5A-C62O7-QVFFG"
   }
 };
 _vue.default.prototype.ajax = function (url, method, data, fun, load) {
@@ -406,14 +429,168 @@ __webpack_require__.r(__webpack_exports__);
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function(wx, uni) {
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
 var _default = {
-  onLaunch: function onLaunch() {},
+  onLaunch: function onLaunch() {
+    var gps = [];
+    wx.setKeepScreenOn({
+      keepScreenOn: true
+    });
+
+    //TODO 每隔3分钟触发自定义事件，接受系统消息
+
+    wx.startLocationUpdate({
+      success: function success(resp) {
+        console.log('开启定位成功');
+      },
+      fail: function fail(resp) {
+        console.log('开启定位失败');
+        uni.$emit('updateLocation', null);
+      }
+    });
+    wx.onLocationChange(function (resp) {
+      var latitude = resp.latitude;
+      var longitude = resp.longitude;
+      var speed = resp.speed;
+      var location = {
+        latitude: latitude,
+        longitude: longitude
+      };
+      var workStatus = uni.getStorageSync('workStatus');
+      var baseUrl = 'http://192.168.31.61:8201/hxds-driver';
+      if (workStatus == '开始接单') {
+        // TODO 只在每分钟的前10秒上报定位信息，减小服务器压力
+        // let current = new Date();
+        // if (current.getSeconds() > 10) {
+        // 	return;
+        // }
+        var settings = uni.getStorageSync('settings');
+        settings = {
+          orderDistance: 0,
+          rangeDistance: 5,
+          orientation: ''
+        };
+        var orderDistance = settings.orderDistance;
+        var rangeDistance = settings.rangeDistance;
+        var orientation = settings.orientation;
+        uni.request({
+          url: "".concat(baseUrl, "/driver/location/updateLocationCache"),
+          method: 'POST',
+          header: {
+            token: uni.getStorageSync('token')
+          },
+          data: {
+            latitude: latitude,
+            longitude: longitude,
+            orderDistance: orderDistance,
+            rangeDistance: rangeDistance,
+            orientateLongitude: orientation != '' ? orientation.longitude : null,
+            orientateLatitude: orientation != '' ? orientation.latitude : null
+          },
+          success: function success(resp) {
+            if (resp.statusCode == 401) {
+              uni.redirectTo({
+                url: 'pages/login/login'
+              });
+            } else if (resp.statusCode == 200 && resp.data.code == 200) {
+              var data = resp.data;
+              if (data.hasOwnProperty('token')) {
+                var token = data.token;
+                uni.setStorageSync('token', token);
+              }
+              console.log('定位更新成功');
+            } else {
+              console.error('更新GPS定位信息失败', resp.data);
+            }
+          },
+          fail: function fail(error) {
+            console.error('更新GPS定位信息失败', error);
+          }
+        });
+      } else if (workStatus == '接客户') {
+        var executeOrder = uni.getStorageSync('executeOrder');
+        var orderId = executeOrder.id;
+        var data = {
+          orderId: orderId,
+          latitude: latitude,
+          longitude: longitude
+        };
+        uni.request({
+          url: "".concat(baseUrl, "/driver/location/updateOrderLocationCache"),
+          method: "POST",
+          header: {
+            token: uni.getStorageSync("token")
+          },
+          data: data,
+          success: function success(resp) {
+            if (resp.statusCode == 401) {
+              uni.redirectTo({
+                url: 'pages/login/login'
+              });
+            } else if (resp.statusCode == 200 && resp.data.code == 200) {
+              var _data = resp.data;
+              if (_data.hasOwnProperty('token')) {
+                var token = _data.token;
+                uni.setStorageSync('token', token);
+              }
+              console.log('订单定位更新成功');
+            } else {
+              console.error('订单定位更新失败', resp.data);
+            }
+          },
+          fail: function fail(error) {
+            console.error('订单定位更新失败', error);
+          }
+        });
+      } else if (workStatus == '开始代驾') {
+        //每凑够20个定位就上传一次，减少服务器的压力
+        var _executeOrder = uni.getStorageSync("executeOrder");
+        if (_executeOrder != null) {
+          gps.push({
+            orderId: _executeOrder.id,
+            customerId: _executeOrder.customerId,
+            latitude: latitude,
+            longitude: longitude,
+            speed: speed
+          });
+          if (gps.length == 1) {
+            uni.request({
+              url: "".concat(baseUrl, "/order/gps/insertOrderGps"),
+              method: 'POST',
+              header: {
+                token: uni.getStorageSync('token')
+              },
+              data: {
+                list: gps
+              },
+              success: function success(resp) {
+                if (resp.statusCode == 401) {
+                  uni.redirectTo({
+                    url: '/pages/login/login'
+                  });
+                } else if (resp.statusCode == 200 && resp.data.code == 200) {
+                  var _data2 = resp.data;
+                  console.log("上传GPS成功");
+                } else {
+                  console.error('保存GPS定位失败', resp.data);
+                }
+                gps.length = 0;
+              },
+              fail: function fail(error) {
+                console.error('保存GPS定位失败', error);
+              }
+            });
+          }
+        }
+      }
+      uni.$emit('updateLocation', location);
+    });
+  },
   onShow: function onShow() {
     console.log('App Show');
   },
@@ -422,6 +599,7 @@ var _default = {
   }
 };
 exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/wx.js */ 1)["default"], __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
 

@@ -191,6 +191,67 @@ var _default = {
       uni.navigateTo({
         url: "../register/register"
       });
+    },
+    login: function login() {
+      var that = this;
+      uni.login({
+        provider: 'weixin',
+        success: function success(resp) {
+          var code = resp.code;
+          var data = {
+            code: code
+          };
+          that.ajax(that.url.login, "POST", data, function (resp) {
+            if (!resp.data.hasOwnProperty("token")) {
+              that.$refs.uToast.show({
+                title: '请先注册',
+                type: 'errot'
+              });
+            } else {
+              var token = resp.data.token;
+              var realAuth = resp.data.realAuth;
+              var archive = resp.data.archive;
+              uni.setStorageSync('token', token);
+              uni.setStorageSync('realAuth', realAuth);
+              uni.removeStorageSync('executeOrder');
+              that.$refs.uToast.show({
+                title: '登录成功',
+                type: 'success',
+                callback: function callback() {
+                  uni.setStorageSync('workStatus', '停止接单');
+                  if (realAuth == 1) {
+                    uni.redirectTo({
+                      url: '../../identity/filling/filling?mode=create'
+                    });
+                  } else if (archive == false) {
+                    uni.showModal({
+                      title: '提示消息',
+                      content: '你还没录入用于核实身份的面部特征信息',
+                      confirmText: '录入',
+                      cancelText: '取消',
+                      success: function success(resp) {
+                        if (resp.confirm) {
+                          uni.redirectTo({
+                            url: '../../identity/face_camera/face_camera?mode=create'
+                          });
+                        } else {
+                          uni.switchTab({
+                            url: "../workbench/workbench"
+                          });
+                        }
+                      }
+                    });
+                  } else {
+                    uni.switchTab({
+                      url: '../workbench/workbench'
+                    });
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
     }
   },
   onLoad: function onLoad() {}
